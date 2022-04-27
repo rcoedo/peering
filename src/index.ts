@@ -46,7 +46,7 @@ const exit = () => {
     repl.start();
   });
 
-  client.on("pay", (amount: number) => {
+  client.on("receive", (amount: number) => {
     repl.addMessage(`Received ${amount} from your peer.`);
   });
 

@@ -5,19 +5,29 @@ import { io, Socket } from "socket.io-client";
 class Client extends EventEmitter {
   readonly port: number;
   readonly uri: string;
+  readonly socket: Socket;
+  readonly server: Server;
 
   private balance: number;
-  private socket: Socket;
-  private readonly server: Server;
+
+  private static validateAmount(amount: number) {
+    if (isNaN(amount)) {
+      throw new Error("The amount must be a number");
+    }
+
+    if (amount <= 0) {
+      throw new Error("The amount must be > 0");
+    }
+    return amount;
+  }
 
   constructor(port: number, uri: string) {
     super();
     this.port = port;
     this.uri = uri;
-
     this.balance = 0;
-    this.server = new Server(port);
-    this.socket = io(`ws://${uri}`);
+    this.server = new Server(this.port);
+    this.socket = io(`ws://${this.uri}`);
 
     this.socket.on("connect", () => {
       this.emit("ready");
@@ -29,15 +39,9 @@ class Client extends EventEmitter {
 
     this.server.on("connection", (socket) => {
       socket.on("pay", (amount) => {
-        if (isNaN(amount)) {
-          throw new Error("The amount must be a number");
-        }
+        Client.validateAmount(amount);
 
-        if (amount <= 0) {
-          throw new Error("The amount must be > 0");
-        }
-
-        this.emit("pay", amount);
+        this.emit("receive", amount);
         this.balance = this.balance + amount;
       });
     });
@@ -48,17 +52,7 @@ class Client extends EventEmitter {
   }
 
   pay(amount: number) {
-    if (isNaN(amount)) {
-      throw new Error("The amount must be a number");
-    }
-
-    if (amount <= 0) {
-      throw new Error("The amount must be > 0");
-    }
-
-    if (this.socket === null) {
-      throw new Error("Unable to connect");
-    }
+    Client.validateAmount(amount);
 
     this.socket.emit("pay", amount);
     this.balance = this.balance - amount;
