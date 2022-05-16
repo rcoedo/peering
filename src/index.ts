@@ -41,6 +41,10 @@ const exit = () => {
     process.stdout.write(`Your balance is ${client.getBalance()}\n`);
   });
 
+  repl.on("say", (...args) => {
+    client.say(args.join(" "));
+  });
+
   client.on("ready", () => {
     process.stdout.write("Welcome to your peering relationship!\n");
     repl.start();
@@ -48,6 +52,10 @@ const exit = () => {
 
   client.on("receive", (amount: number) => {
     repl.addMessage(`Received ${amount} from your peer.`);
+  });
+
+  client.on("say", (message: string) => {
+    repl.addMessage(`Your peer says: ${message}`);
   });
 
   client.on("disconnect", exit);

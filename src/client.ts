@@ -44,6 +44,10 @@ class Client extends EventEmitter {
         this.emit("receive", amount);
         this.balance = this.balance + amount;
       });
+
+      socket.on("say", (message) => {
+        this.emit("say", message);
+      });
     });
   }
 
@@ -56,6 +60,10 @@ class Client extends EventEmitter {
 
     this.socket.emit("pay", amount);
     this.balance = this.balance - amount;
+  }
+
+  say(message: string) {
+    this.socket.emit("say", message);
   }
 }
 
